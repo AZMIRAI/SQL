@@ -1,4 +1,4 @@
--- ≈◊¿Ã∫Ìø° ¿÷¥¬ ∏µÁ ø≠¿ª «•Ω√ «“ ºˆ ¿÷¥Ÿ --
+-- ÌÖåÏù¥Î∏îÏóê ÏûàÎäî Î™®Îì† Ïó¥ÏùÑ ÌëúÏãú Ìï† Ïàò ÏûàÎã§ --
 select *
 FROM y_dept;
 
@@ -40,7 +40,7 @@ where dept_id = 100;
 
 select emp_id, emp_name, position, dept_id
 from y_emp
-where position = '∫ŒªÁ¿Â';
+where position = 'Î∂ÄÏÇ¨Ïû•';
 
 select emp_id , emp_name , birthdate, hiredate
 from y_emp;
@@ -74,11 +74,11 @@ where mgr_id not in (1001, 1002, 1003, 1029);
 
 select emp_id , emp_name
 from y_emp
-where emp_name like '±Ë%';
+where emp_name like 'ÍπÄ%';
 
 select emp_id , emp_name
 from y_emp
-where emp_name like '_Ω¬%';
+where emp_name like '_Ïäπ%';
 
 select *
 from pay_grade
@@ -109,17 +109,17 @@ where dept_id is null;
 
 select emp_id, emp_name, position, dept_id
 from y_emp
-where position = 'ªÁø¯'
+where position = 'ÏÇ¨Ïõê'
 and dept_id = 400;
 
 select emp_id, position dept_id
 from y_emp
-where position not in('∞˙¿Â','¥Î∏Æ','ªÁø¯');
+where position not in('Í≥ºÏû•','ÎåÄÎ¶¨','ÏÇ¨Ïõê');
 
 select emp_name, position, salary
 from y_emp
-where position = '¬˜¿Â'
-or position = '∫Œ¿Â'
+where position = 'Ï∞®Ïû•'
+or position = 'Î∂ÄÏû•'
 and salary > 700;                                        
 
 select rowid, dept_id
@@ -190,11 +190,11 @@ select trunc(56.834 , 2)
 from dual;                                                                               
 
 select emp_id , hiredate,
-    months_between(sysdate, hiredate) ±Ÿπ´±‚∞£,
-    add_months(hiredate, 3) ºˆΩ¿¡æ∑·¿œ,
-    next_day(hiredate, '±›ø‰¿œ'), last_day(hiredate)
+    months_between(sysdate, hiredate) Í∑ºÎ¨¥Í∏∞Í∞Ñ,
+    add_months(hiredate, 3) ÏàòÏäµÏ¢ÖÎ£åÏùº,
+    next_day(hiredate, 'Í∏àÏöîÏùº'), last_day(hiredate)
 from y_emp
-where position = 'ªÁø¯';
+where position = 'ÏÇ¨Ïõê';
 
 select emp_id, salary, comm,
     (salary * 12 ) + ( salary * comm)
@@ -212,7 +212,7 @@ where comm is not NULL;
 
 SELECT emp_id, emp_name , position, dept_id
 FROM y_emp
-WHERE position = 'ªÁø¯'
+WHERE position = 'ÏÇ¨Ïõê'
     OR dept_id = 400;
     
 select UPPER(email), LOWER(email), INITCAP(email)
@@ -234,11 +234,11 @@ WHERE birthdate >= TO_DATE('01-01-90','DD-MM-RR');
 SELECT emp_id,  REPLACE(emp_name, SUBSTR(emp_name,2,4),'***') name,
                 CONCAT(birthdate,CONCAT('[', CONCAT(gender,']'))) AS birth
 FROM y_emp
-WHERE SUBSTR(emp_name, -1,1) = 'øµ';
+WHERE SUBSTR(emp_name, -1,1) = 'ÏòÅ';
 
 
 SELECT emp_id, emp_name, TO_CHAR(hiredate,'YYYY-MM-DD'),
-        TO_CHAR(NEXT_DAY(ADD_MONTHS(hiredate,6),'±›ø‰¿œ'),'YYYY-MM-DD')
+        TO_CHAR(NEXT_DAY(ADD_MONTHS(hiredate,6),'Í∏àÏöîÏùº'),'YYYY-MM-DD')
         AS "Review_Day"
 FROM y_emp
 WHERE TO_CHAR(hiredate,'YYYY')LIKE '2011%';
@@ -264,9 +264,9 @@ SELECT emp_id, emp_name, COALESCE(comm,salary,0)
 FROM y_emp;
 
 SELECT emp_name, position, salary,
-      DECODE(position,  'ªÁø¯', 1.05*salary,
-                        '¥Î∏Æ', 1.07*salary,
-                        '∫Œ¿Â', 1.21*salary,
+      DECODE(position,  'ÏÇ¨Ïõê', 1.05*salary,
+                        'ÎåÄÎ¶¨', 1.07*salary,
+                        'Î∂ÄÏû•', 1.21*salary,
                         salary) AS INCREASED_SALARY
 FROM y_emp;      
       
@@ -277,9 +277,9 @@ SELECT emp_id, emp_name, salary,
 FROM y_emp;
 
 SELECT emp_name,position,salary,
-        CASE position WHEN 'ªÁø¯' THEN 1.05*salary
-                      WHEN '¥Î∏Æ' THEN 1.07*salary
-                      WHEN '∞˙¿Â' THEN 1.10*salary
+        CASE position WHEN 'ÏÇ¨Ïõê' THEN 1.05*salary
+                      WHEN 'ÎåÄÎ¶¨' THEN 1.07*salary
+                      WHEN 'Í≥ºÏû•' THEN 1.10*salary
                       ELSE salary END AS INCREASED_SALARY
 FROM y_emp;
 
@@ -290,7 +290,7 @@ SELECT emp_id, emp_name, salary,
         END AS SELARY_LEVEL
 FROM y_emp;
 
---  ±◊∑Ï«‘ºˆ
+--  Í∑∏Î£πÌï®Ïàò
 
 SELECT SUM(salary), AVG(salary), MAX(salary),MIN(SALARY)
 FROM y_emp;
