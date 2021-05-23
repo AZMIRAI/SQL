@@ -1,69 +1,68 @@
 -- 테이블에 있는 모든 열을 표시 할 수 있다 --
 select *
 FROM y_dept;
-
--- 
+--ㅇ 
 select dept_id,dept_name, loc_id, mgr_id 
 FROM y_dept;
-
+--ㅇ
 select emp_id, emp_name, salary, salary+30
 from y_emp;
-
+--ㅇ
 select sysdate
 from dual;
-
+--ㅇ
 select sysdate + 10
 from dual;
-
+--ㅇ
 alter session set nls_date_format = 'yyyy/mm/dd hh24: mi :ss';
 select sysdate from dual;
-
+--ㅇ
 select sysdate, sysdate + 3/24, sysdate + 40/(24*60) , sysdate + 30 / ( 24 * 60 * 60)
-
+--ㅇ
 from dual;
-
+--ㅇ
 select emp_id, emp_name, comm
 from y_emp;
-
+--ㅇ
 select emp_id, salary ,comm, (salary * 12) + ( salary * comm)
 from y_emp;
-
+--ㅇ
 select emp_name as "Name" , comm as commission, salary * 12 as "Annual Salary"
 from y_emp;
-
+--ㅇ
 select emp_name || q'<'s salary >' || position as "Employees Position"
 from y_emp; 
-
+--ㅇ
 select emp_id , emp_name, position, dept_id
 from y_emp
 where dept_id = 100;
-
+--ㅇ
 select emp_id, emp_name, position, dept_id
 from y_emp
 where position = '부사장';
-
+--ㅇ
 select emp_id , emp_name , birthdate, hiredate
 from y_emp;
-
+--ㅇ
 alter session set nls_date_format = 'yy/mm/dd';
 select sysdate from dual;
-
+--ㅇ
 select emp_id, emp_name, salary
 from y_emp
 where salary <= 300;
-
+--ㅇ
 select emp_name, salary * 12 annsal
 from y_emp
 where salary *12 > 8000;
-
+--ㅇ
 select emp_name, salary * 12 annsal
 from y_emp
 where salary * 12  > 8000;
-
+--ㅇ
 select emp_id , emp_name , position, hiredate
 from y_emp
 where hiredate > '17/01/01';
-
+--ㅇ
 select emp_name, salary
 from y_emp
 where salary not between 600 and 700;
