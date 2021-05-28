@@ -188,7 +188,7 @@ from dual;
 
 select trunc(56.834 , 2)
 from dual;                                                                               
-
+// 이까지확인 
 select emp_id , hiredate,
     months_between(sysdate, hiredate) 근무기간,
     add_months(hiredate, 3) 수습종료일,
