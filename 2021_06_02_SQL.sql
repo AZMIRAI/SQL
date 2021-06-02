@@ -900,9 +900,323 @@ select object_name, type, createtime, droptime
 from recyclebin;
 
 flashback table "BIN$axM/ume9QS2TXSrUql8duw==$0" to before drop;
-
 drop table test purge;
-
 select * from tab;
 
 purge recyclebin;
+
+-- 부모가 죽고   자식이 죽을수도있고
+-- 부모가 죽어도 자식이 남을 수도있다
+-- 자식테이블은 언제라도 죽어도 된다 부모테이블은 안됨
+
+-- 부모테이블 생성
+create table test_pt
+(d_id number(3) constraint test_pt_d_id_pk primary key,
+dname varchar2(10));
+
+-- 자식테이블 생성
+create table test_ct
+(id number(3) constraint test_ct_id_pk primary key,
+name varchar2(10) constraint test_ct_name_nn not null);
+
+-- user_constraints 뷰를 통해 제약조건 검사
+select table_name, constraint_name, status
+from user_constraints
+where table_name in ('TEST_PT','TEST_CT'); -- cons01로 저장
+
+-- 부모/자식 테이블 구성 조사
+desc test_ct;
+desc test_pt;
+
+--제약조건을 추가하기 위해서 자식테이블에 3개컬럼(hp,sal, d_id)를 추가
+alter table TEST_CT
+add (hp varchar2(11));
+
+alter table test_ct
+add (sal number(9));
+
+alter table test_ct
+add (d_id number(3));
+
+-- 추가된 컬럼을 확인 하기 위해 자식테이블 구성조사
+desc test_ct
+
+-- unique key 제약조건을 생성
+alter table test_ct
+add constraint test_ct_hp_uk unique(hp);
+
+-- check 제약조건을 생성
+alter table test_ct
+add constraint test_ct_sal_ck check (sal between 10000 and 90000);
+
+-- foreign key 제약조건을 옵션 없이 생성
+alter table test_ct
+add constraint test_ct_d_id_fk foreign key(d_id)
+references test_pt(d_id);
+
+-- 부모 테이블에 row 입력 후 확인
+insert into test_pt
+values (10,'admin');
+insert into test_pt
+values (20, 'sales');
+insert into test_pt
+values (30, 'marketing');
+commit;
+
+select * from test_pt;
+
+insert into test_ct
+values (111,'mapia', '01077779999',17000,10);
+
+insert into test_ct
+values (112,'solomon', '01012345678',57000,10);
+
+insert into test_ct
+values (117,'kkk', '01012331111',77000,20);
+
+insert into test_ct
+values (118,'simson', '01087654321',89000,30);
+
+insert into test_ct
+values (127,'scott', '01027277979',89000,30);
+
+commit;
+select * from test_ct;
+
+
+-- 12. 행 삽입 및 삭제, 컬럼값 변경 등을 통해 여러 가지 제약조건 테스팅
+-- ※ foreign key를 on delete cascade/on delete set null 옵션 테스팅(p308)
+
+-- 먼저 foreign key 제약조건을 삭제
+alter table test_ct
+drop constraint test_ct_d_id_fk;
+
+--롤백
+rollback
+
+-- user_constraints 뷰를 통해 추가 제약조건 검사(cons01로 조회)
+select table_name, constraint_name, status
+from user_constraints
+where table_name in ('TEST_PT', 'TEST_CT');
+
+-- foreign key를 on delete cascade 옵션으로 생성(p308)
+alter table test_ct
+add constraint test_ct_d_id_fk foreign key(d_id)
+references test_pt(d_id) on delete cascade;
+
+-- user_constraints 뷰를 통해 추가 제약조건 검사(cons01로 조회)
+select table_name,constraint_name,status
+from user_constraints
+where table_name in ('TEST_PT','TEST_CT');
+
+-- 부모 테이블 특정 row 삭제
+delete from test_pt where d_id=10 ;
+
+-- on delete cascade 옵션이 적용되었는지를 확인 후 rollback
+select *from test_ct;
+select * from test_pt;
+select * from test_ct;
+rollback;
+
+-- 다시 foreign key 제약조건을 삭제
+alter table test_ct
+drop constraint test_ct_d_id_fk; 
+
+-- user_constraints 뷰를 통해 추가 제약조건 검사(cons01로 조회)
+select table_name, constraint_name, status
+from user_constraints
+where table_name in ('TEST_PT', 'TEST_CT');
+
+-- foreign key를 on delete null 옵션으로 생성(p308)
+alter table test_ct
+add constraint test_ct_d_id_fk foreign key(d_id)
+references test_pt(d_id)
+on delete set null; 
+
+-- user_constraints 뷰를 통해 추가 제약조건 검사(cons01로 조회)
+select table_name, constraint_name, status
+from user_constraints
+where table_name in ('TEST_PT', 'TEST_CT');
+
+-- 부모 테이블 특정 row 삭제
+delete from test_pt where d_id = 10;
+
+-- on delete set null 옵션이 적용되었는지를 확인 후 테이블 삭제
+select * from test_pt;
+select * from test_ct;
+rollback;
+
+-- 부모 테이블 삭제 
+-- 자식 테이블이 있어 삭제가 안 됨 
+drop table test_pt purge;
+
+--cascade constraint 옵션으로 부모 테이블 삭제
+drop table test_pt cascade constraints purge;
+
+-- 추후에 자식 테이블 삭제
+drop table test_ct purge;
+
+-- 제약조건 활성화 및 비활성화(p311 ~ p315)
+
+-- 부모테이블생성
+create table test_pt
+(d_id number(3) constraint test_pt_d_id_pk primary key,
+dname varchar2(10));
+
+-- 자식테이블생성
+create table test_ct
+(id number(3) constraint test_ct_id_pk primary key,
+name varchar2(10) constraint test_ct_name_nn not null,
+d_id number(3) constraint test_ct_d_id_fk references test_pt(d_id));
+
+-- user_constraints 뷰를 통해 제약조건 검사(cons01로 조회)
+select table_name, constraint_name, status
+from user_constraints
+where table_name in ('TEST_PT', 'TEST_CT');
+
+-- 부모 테이블에 row 입력 후 확인
+insert into test_pt 
+values (10, 'admin');
+insert into test_pt 
+values (20, 'sales');
+insert into test_pt 
+values (30, 'marketing');
+commit;
+
+select * from test_pt;
+
+--자식테이블에 row 입력후 확인
+insert into test_ct
+values (111,'mapia',10);
+insert into test_ct
+values (112,'solomon',10);
+insert into test_ct
+values (113,'kkk',20);
+insert into test_ct
+values (118, 'simson', 30);
+commit;
+
+select * from test_ct;
+
+-- 부모 테이블에서 cascade 옵션으로 constraint disable
+alter table test_pt
+disable constraint test_pt_d_id_pk cascade;
+
+-- user_constraints 뷰를 통해 제약조건의 status 검사(cons01로 조회) 
+select table_name,constraint_name, status
+from user_constraints
+where table_name in('TEST_PT','TEST_CT');
+
+-- 중복된 부서 코드를 입력
+insert into test_pt
+values (20,'affairs');
+commit;
+
+-- 부모 테이블 제약조건은 enamble
+alter table test_pt
+enable constraint test_pt_d_id_pk; -- 중복된 부서 코드 입력으로 인한 오류발생
+
+-- rowid를 이용하여 오류수정
+select d_id,dname,rowid
+from test_pt;
+
+
+delete from test_pt
+where rowid = 'AAAE52AAEAAAAH2AAD';
+commit;
+
+select * from test_pt;
+
+-- 다시 부모 테이블의 제약조건을 enable
+alter table test_pt
+enable constraint test_pt_d_id_pk;
+
+-- user_constraints 뷰를 통해 제약조건의 status 검사(cons01로 조회) 
+select table_name, constraint_name, status
+from user_constraints
+where table_name in ('TEST_PT', 'TEST_CT');
+
+-- 자식 테이블의 제약조건을 enable 
+alter table test_ct
+enable constraint test_ct_d_id_fk;
+
+-- user_constraints 뷰를 통해 제약조건의 status 검사(cons01로 조회) 
+select table_name, constraint_name, status
+from user_constraints
+where table_name in ('TEST_PT', 'TEST_CT');
+
+-- pk가 ck를 참조하는중
+
+-- 제약조건의 삭제 (p315~p316)
+select table_name, constraint_name, r_constraint_name, status
+from user_constraints
+where table_name in ('TEST_PT', 'TEST_CT');
+
+-- 앞 페이지에서 삭제한 제약조건 추가
+alter table test_pt
+add constraint test_pt_d_id_pk;
+
+alter table test_pt
+drop constraint test_pt_d_id_pk cascade;
+
+-- 제약조건이 정의된 열 삭제(p316 ~ p318)
+
+-- 앞 페이지에서 삭제한 제약조건 추가
+alter table test_pt
+add constraint test_pt_d_id_pk primary key(d_id);
+
+alter table test_ct
+add constraint test_ct_d_id_fk foreign key(d_id)
+references test_pt(d_id);
+   
+-- user_constraints 뷰를 통해 제약조건의 종속관계를 검사
+select table_name, constraint_name, r_constraint_name, 
+status, search_condition
+from user_constraints
+where table_name in ('TEST_PT', 'TEST_CT'); --> cons03로 저장
+
+-- user_constraints 뷰를 통해 제약조건의 이름 확인
+select table_name, constraint_name, constraint_type
+from user_constraints
+where table_name = 'DEPT400'; --> cons04로 저장
+-- 제약조건이름 줘야한다
+
+-- 제약조건의 이름 변경 
+alter table dept400
+rename constraint SYS_C007002 to dept400_name_nn;
+
+-- user_constraints 뷰를 통해 제약조건의 이름 확인(cons04로 조회)
+select table_name, constraint_name, constraint_type
+from user_constraints
+where table_name = 'DEPT400';
+
+-- 
+select * from test_pt;
+insert into test_pt values (10,'aaa');
+
+-- 지연 가능한 제약조건(p319 ~ p321)
+
+-- ※ NOT DEFERRABLE IMMEDIATE 경우
+
+-- Y_DEPT의 제약조건을 살펴보고 PRIMARY KEY를 추가
+SELECT constraint_name, status, constraint_type, deferrable, deferred
+FROM user_constraints
+WHERE table_name = 'Y_DEPT'; ==> con1로 저장
+
+ALTER TABLE y_dept
+ADD constraint y_dept_dept_id_pk PRIMARY KEY(dept_id); ==> con2로 저장
+
+
+SELECT * FROM y_dept;
+
+-- Y_DEPT를 먼저 조회 후에 자료 입력
+INSERT INTO y_dept(dept_id, dept_name)
+VALUES(700,'배송부');
+INSERT INTO y_dept(dept_id, dept_name)
+VALUES(700,'판매부');
+SELECT * FROM y_dept; -- 판매부는 살아있음
+
+rollback;
+
+-- 제약조건을 지연으로변경 하면 ? 에라남
+set constraint y_dept_dept_id_pk deferred;
