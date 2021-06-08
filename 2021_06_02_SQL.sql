@@ -1321,3 +1321,7 @@ set constraint y_dept_dept_id_pk immediate;
 SELECT * FROM y_dept;
 delete from y_dept where dept_id=700;
 commit;
+
+select constraint_name, column_name
+from user_cons_columns
+where table_name = 'y_dept';
