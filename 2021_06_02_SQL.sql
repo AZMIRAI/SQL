@@ -1353,3 +1353,46 @@ where table_name in ('TEST_PT', 'TEST_CT'); ==> 328로 저장
 select table_name, constraint_name, status
 from user_constraints
 where table_name in ('TEST_PT', 'TEST_CT'); ==> 329로 저장
+
+--5. 예를 들어 primary key 비활성화한 후 검사
+alter table test_pt 
+disable constraint test_pt_d_id_pk cascade; ==> 328, 329로 조회
+
+alter table test_pt
+enable constraint test_pt_d_id_pk;
+alter table test_ct
+enable constraint test_ct_d_id_fk; ==> 328, 320로 조회
+
+
+
+
+create index test_ct_name_idx on test_ct(name);  
+create unique index test_pt_dname_idx on test_pt(dname);
+create unique index test_ct_jno_idx on test_ct(jno);
+
+rollback;
+create unique index test_ct_jno_hp_idx on test_ct(jno, hp);
+create index test_ct_sal_fidx on test_ct(sal*12*0.9);
+
+select id, name, position
+from test_ct
+where sal*12*0.9 > 10000;
+
+--==> 상기의 인덱스 생성 후에 328, 329로 조회
+
+--- 인덱스를 생성한 해당 열에 함수나 표현식을 사용해서 검색하면 생성한 인덱스로     검색을 하지 않고 전체 테이블 스캔을 함(p331)
+
+drop index test_ct_sal_fidx;
+
+select id, name, position
+alter table test_pt;
+drop constraint test_pt_lo_id_uk; ==> 정상 처리
+
+drop constraint test_pt_lo_id_uk; ==> 정상 처리
+
+drop constraint test_pt_lo_id_uk; ==> 정상 처리;
+
+select ic.index_name, ic.column_name, uniqueness
+from user_indexes ix, user_ind_columns ic
+where ic.index_name = ix.index_name
+and ic.table_name in ('TEST_PT', 'TEST_CT');
