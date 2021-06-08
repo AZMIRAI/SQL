@@ -1325,3 +1325,31 @@ commit;
 select constraint_name, column_name
 from user_cons_columns
 where table_name = 'y_dept';
+
+drop table test_pt purge;
+
+--1. 부모 테이블 생성 
+create table test_pt
+(d_id number(3) constraint test_pt_d_id_pk primary key,
+lo_id varchar2(7) constraint test_pt_lo_id_uk unique,
+dname varchar2(10));
+
+--2. 자식 테이블 생성 
+create table test_ct
+(id number(3) constraint test_ct_id_pk primary key,
+name varchar2(10) constraint test_ct_name_nn not null,
+position varchar2(10),
+jno varchar2(13),
+hp varchar2(11),
+sal number(10),
+d_id number(3) constraint test_ct_d_id_fk references test_pt(d_id));
+
+--3. user_indexes 뷰를 통해 인덱스 조사
+select table_name, index_name, index_type, uniqueness
+from user_indexes
+where table_name in ('TEST_PT', 'TEST_CT'); ==> 328로 저장
+
+--4. user_constraints 뷰를 통해 제약조건 검사
+select table_name, constraint_name, status
+from user_constraints
+where table_name in ('TEST_PT', 'TEST_CT'); ==> 329로 저장
