@@ -1208,8 +1208,8 @@ ADD constraint y_dept_dept_id_pk PRIMARY KEY(dept_id); ==> con2로 저장
 
 
 SELECT * FROM y_dept;
-
 -- Y_DEPT를 먼저 조회 후에 자료 입력
+
 INSERT INTO y_dept(dept_id, dept_name)
 VALUES(700,'배송부');
 INSERT INTO y_dept(dept_id, dept_name)
@@ -1220,3 +1220,104 @@ rollback;
 
 -- 제약조건을 지연으로변경 하면 ? 에라남
 set constraint y_dept_dept_id_pk deferred;
+
+set constraint y_dept_dept_id_pk deferred;
+
+ALTER TABLE y_dept
+DROP constraint y_dept_dept_id_pk; ==> con3로 저장
+
+ALTER TABLE y_dept
+ADD constraint y_dept_dept_id_pk PRIMARY KEY(dept_id) 
+DEFERRABLE INITIALLY IMMEDIATE; ==> con4로 저장
+
+ALTER TABLE y_dept
+ADD constraint y_dept_dept_id_pk PRIMARY KEY(dept_id) 
+DEFERRABLE; ==> con4-1로 저장
+
+rollback;
+
+-- Y_DEPT의 PRIMARY KEY 속성을 조회(con1로 조회)
+SELECT constraint_name, status, constraint_type, deferrable, deferred
+FROM user_constraints
+WHERE table_name = 'Y_DEPT';
+-- "DEFERRABLE IMMEDIATE"로 조회됨
+
+-- 4) Y_DEPT를 먼저 조회한 후에 자료 입력
+SELECT * FROM y_dept;
+
+INSERT INTO y_dept(dept_id, dept_name)
+VALUES(700,'배송부');
+INSERT INTO y_dept(dept_id, dept_name)
+VALUES(700,'판매부');
+
+-- 5) Y_DEPT를 조회
+SELECT * FROM y_dept;
+-- > “700 배송부” 데이터는 트랜잭션 진행중으로 계속 조회가 되며, 
+--    기본값인 즉시적(IMMEDIATE)으로 인해서 문장레벨에서 오류가 발생한 문장만       취소되고 트랜잭션은 계속 유지됨
+
+rollback;
+
+set constraint y_dept_dept_id_pk deferred;
+
+--8) 먼저 Y_DEPT를 조회한 후에 다음과 같이 삽입  
+SELECT * FROM y_dept;
+
+INSERT INTO y_dept(dept_id, dept_name)
+VALUES(700,'배송부');
+INSERT INTO y_dept(dept_id, dept_name)
+VALUES(700,'판매부');
+
+SELECT * FROM y_dept; 
+
+commit;
+--오류 발생 -
+--SQL 오류: ORA-02091: transaction rolled back
+
+9) Y_DEPT를 조회
+SELECT * FROM y_dept;
+--> 트랜잭션 단위(레벨)로 롤백이 진행됨. 
+--    지연적(DEFERRED)으로 인해 이 작업은 커밋 시 한꺼번에 제약조건을 검사한        후에 단 한건이라도 제약조건을 위배하면 전체 롤백이 됨
+
+--1) DEFERRABLE DEFERRED를 설정하기 위해 제약조건을 삭제(con3로 수행)
+ALTER TABLE y_dept
+DROP constraint y_dept_dept_id_pk;
+
+--2) DEFERRABLE DEFERRED 제약조건으로 추가
+ALTER TABLE y_dept
+ADD constraint y_dept_dept_id_pk PRIMARY KEY(dept_id) 
+DEFERRABLE INITIALLY DEFERRED; ==> con5로 저장
+
+3) Y_DEPT의 PRIMARY KEY 속성을 조회(con1로 조회)
+SELECT constraint_name, status, constraint_type, deferrable, deferred
+FROM user_constraints
+WHERE table_name = 'Y_DEPT';
+--> "DEFERRABLE DEFERRED"로 조회됨
+
+--4) 먼저 Y_DEPT를 조회한 후에 다음과 같이 삽입  
+SELECT * FROM y_dept;
+
+INSERT INTO y_dept(dept_id, dept_name)
+VALUES(700,'배송부');
+INSERT INTO y_dept(dept_id, dept_name)
+VALUES(700,'판매부');
+
+SELECT * FROM y_dept;
+
+rollback;
+
+select * from y_dept;
+
+commit;
+
+--5) Y_DEPT를 조회
+SELECT * FROM y_dept;
+--> 트랜잭션 단위(레벨)로 롤백이 진행됨. 
+--    기본값인 지연적(DEFERRED)으로 인해 이 작업은 커밋 시 한꺼번에 제약조건을      검사한 후에 단 한건이라도 제약조건을 위배하면 전체 롤백이 됨
+
+--6) 제약조건을 즉시적(IMMEDIATE)으로 변경.
+set constraint y_dept_dept_id_pk immediate;
+
+7) Y_DEPT를 먼저 조회 후에 자료 입력
+SELECT * FROM y_dept;
+delete from y_dept where dept_id=700;
+commit;
