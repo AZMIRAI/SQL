@@ -1396,3 +1396,105 @@ select ic.index_name, ic.column_name, uniqueness
 from user_indexes ix, user_ind_columns ic
 where ic.index_name = ix.index_name
 and ic.table_name in ('TEST_PT', 'TEST_CT');
+
+
+
+-- 6월 9일
+
+create or replace view dept300_vu
+as select emp_id, emp_name,position, mgr_id,dept_id
+from y_emp
+where dept_id = 300 ;
+
+desc dept300_vu
+select * from dept300_vu;
+
+create or replace view sal_vu200
+as select emp_id id, emp_name name, salary*12 ann_sal
+from y_emp
+where dept_id = 200;
+
+desc sal_vu200
+
+create or replace view sal_vu200(id, name, ann_sal)
+as select emp_id, emp_name, salary*12
+from y_emp
+where dept_id = 200;
+
+desc sal_vu200 
+
+select * from sal_vu200;
+
+create table sal200
+as select emp_id id, emp_name, salary*12 ann_sal
+from y_emp
+where dept_id = 200;
+
+desc sal200
+select * from sal200;
+
+update y_emp
+set salary = salary+200
+where dept_id = 200;
+
+select * from sal200;
+select * from sal_vu200; 
+
+insert into dept300_vu
+values (2020, '이병헌', '과장', 1001, 500);
+
+commit;
+
+
+select * from y_emp
+where emp_id = 2020; 
+
+create or replace view sal_vu200
+as select emp_id, emp_name, salary*12 ann_sal, dept_id deptid
+from y_emp;
+
+desc sal_vu200
+
+select * from sal_vu200;
+
+create view dname_tot_vu(name, avgsal, sumsal)
+as select d.dept_name, avg(e.salary), sum(e.salary)
+from y_emp e, y_dept d
+where e.dept_id = d.dept_id
+group by d.dept_name;
+
+desc dname_tot_vu
+select * from dname_tot_vu;
+-- 복합뷰
+
+select * from dept300_vu;
+
+create or replace view dept300_vu
+as select emp_id, emp_name, position, mgr_id, dept_id
+from y_emp
+where dept_id = 300
+with check option;
+
+update dept300_vu
+set dept_id = 500
+where emp_id = 1044;
+
+create or replace view dept300_vu
+as select emp_id, emp_name, position, mgr_id, dept_id
+from y_emp
+where dept_id = 300
+with read only;
+
+update dept300_vu
+set mgr_id = 1035
+where emp_id = 1044; ==> error 발생
+
+set long 1000
+col view_name for a15
+   
+select view_name, text
+from user_views;
+
+
+-- 아직 안함
+drop view sal_vu200;
