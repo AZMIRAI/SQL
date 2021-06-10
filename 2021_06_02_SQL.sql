@@ -269,6 +269,8 @@ SELECT emp_name, position, salary,
                         '부장', 1.21*salary,
                         salary) AS INCREASED_SALARY
 FROM y_emp;      
+
+체크 완료
       
 SELECT emp_id, emp_name, salary,
         DECODE(TRUNC(salary/300), 0,'C',
